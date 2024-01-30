@@ -23,7 +23,7 @@ def get_gw_hosts_list(ns,label):
 
     # fetches hosts defined in GW given with label selectors and namespace
 
-    #get ns if locust is run in same namespace as the GW
+    #get ns if locust is run in same namespace as the GW - not needed here
     #ns = subprocess.run(["cat", "/var/run/secrets/kubernetes.io/serviceaccount/namespace"], stdout=subprocess.PIPE).stdout.decode('utf-8')
 
     #config.load_kube_config()
@@ -51,7 +51,7 @@ def get_node_port(ns, svcname) :
 
     # fetches node port a GW service in given namespace.
 
-    # get ns if locust is run in same namespace as the GW
+    # get ns if locust is run in same namespace as the GW - not needed here
     #ns = subprocess.run(["cat", "/var/run/secrets/kubernetes.io/serviceaccount/namespace"], stdout=subprocess.PIPE).stdout.decode('utf-8')
 
     config.load_incluster_config()
@@ -73,7 +73,7 @@ def get_lb_ip(ns, svcname) :
 
     # fetches LB IP of a GW service in given namespace.
 
-    # get ns if locust is run in same namespace as the GW
+    # get ns if locust is run in same namespace as the GW - not needed here
     #ns = subprocess.run(["cat", "/var/run/secrets/kubernetes.io/serviceaccount/namespace"], stdout=subprocess.PIPE).stdout.decode('utf-8')
 
     config.load_incluster_config()
@@ -85,3 +85,20 @@ def get_lb_ip(ns, svcname) :
     lb_ip = service.status.load_balancer.ingress[0].ip
 
     return(lb_ip)
+
+def get_cluster_ip(ns, svcname) :
+
+    # fetches cluster IP of a GW service in given namespace.
+
+    # get ns if locust is run in same namespace as the GW - not needed here
+    #ns = subprocess.run(["cat", "/var/run/secrets/kubernetes.io/serviceaccount/namespace"], stdout=subprocess.PIPE).stdout.decode('utf-8')
+
+    config.load_incluster_config()
+    apps_v1 = client.CoreV1Api()
+
+    cluster_ip = ""
+
+    service  = apps_v1.read_namespaced_service(svcname,ns)
+    cluster_ip = str(service.spec.cluster_ip)
+
+    return(cluster_ip)

@@ -3,7 +3,7 @@ from unittest.mock import patch
 import time
 
 import requests
-from lib.locust_lib import get_gw_hosts_list, get_first_node_internal_ip, get_node_port, get_lb_ip
+from lib.locust_lib import get_gw_hosts_list, get_first_node_internal_ip, get_node_port, get_lb_ip, get_cluster_ip
 
 default_headers = {
     'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_13_4) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/76.0.3809.100 Safari/537.36'}
@@ -11,17 +11,24 @@ default_headers = {
 
 class WebsiteUser(HttpUser):
 
+    #getting service details
     node_ip = get_first_node_internal_ip()
     node_port = get_node_port("istio-system", "istio-ingressgateway")
     print("===== node ip & port is " + node_ip + " & " + node_port)
 
+
+
+    svc_port = "443"
+    lb_ip = get_lb_ip("istio-system", "istio-ingressgateway")
+    print("===== lb ip & port is " + lb_ip + " & " + svc_port)
+
+    cluster_ip = get_cluster_ip("istio-system", "istio-ingressgateway")
+    print("===== cluster ip & port is " + cluster_ip + " & " + svc_port)
+
+    #getting hostnames exposed by gateway - if you have multiple gateways call
+    # it multiple times namespace and with correct label
     host_list = get_gw_hosts_list("istio-system", "gw=bookinfo-gateway")
     print("===== hosts list is " + str(host_list))
-
-    lb_port = "443"
-    lb_ip = get_lb_ip("istio-system", "istio-ingressgateway")
-    print("===== lb ip & port is " + lb_ip + " & " + lb_port)
-
 
     def connect_to(self, host, port):
         from urllib3.util.connection import create_connection as orig_create_connection
@@ -52,7 +59,14 @@ class WebsiteUser(HttpUser):
             # if you want to send traffic on LB IP of the ingress gateway use 
             # below three lines and comment out above nodeport part
 
-            with self.connect_to(self.lb_ip, self.lb_port) :
+            #with self.connect_to(self.lb_ip, self.svc_port) :
+            #    self.client.get(url, headers=default_headers)
+            #    time.sleep(0.1)
+            
+            # if you want to send traffic on LB IP of the ingress gateway use 
+            # below three lines and comment out above nodeport part
+
+            with self.connect_to(self.cluster_ip, self.svc_port) :
                 self.client.get(url, headers=default_headers)
                 time.sleep(0.1)
             
