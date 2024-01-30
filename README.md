@@ -56,6 +56,8 @@ For testing the script use the example given in "bookinfo-gateway-vs.yaml" & "ae
     kubectl create configmap my-loadtest-lib --from-file ./lib -n locust
     
     kubectl apply -f role.yaml
+
+    helm repo add deliveryhero https://charts.deliveryhero.io/
     
     helm install locust deliveryhero/locust \
       --set loadtest.name=my-loadtest0 \
