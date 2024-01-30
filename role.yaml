@@ -1,0 +1,39 @@
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: locust-service-reader
+rules:
+- apiGroups: [""]
+  resources: ["services", "nodes"]
+  verbs: ["get", "list"]
+- apiGroups: ["networking.istio.io"]
+  resources: ["gateways"]
+  verbs: ["get", "list"]
+---
+kind: ClusterRoleBinding
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: locust-master0-t2w0w9
+subjects:
+- kind: ServiceAccount
+  name: locust-master
+  namespace: locust
+roleRef:
+  kind: ClusterRole
+  name: locust-service-reader
+  apiGroup: ""
+---
+kind: ClusterRoleBinding
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: locust-worker0-t2w0w9
+subjects:
+- kind: ServiceAccount
+  name: locust-worker
+  namespace: locust
+roleRef:
+  kind: ClusterRole
+  name: locust-service-reader
+  apiGroup: ""
+---

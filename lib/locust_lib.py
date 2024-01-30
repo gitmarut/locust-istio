@@ -3,7 +3,6 @@ from kubernetes import client, config
 import json
 import subprocess
 
-
 def get_first_node_internal_ip() :
 
     # fetches the internal IP of first node in the cluster
@@ -27,7 +26,6 @@ def get_gw_hosts_list(ns,label):
     #get ns if locust is run in same namespace as the GW
     #ns = subprocess.run(["cat", "/var/run/secrets/kubernetes.io/serviceaccount/namespace"], stdout=subprocess.PIPE).stdout.decode('utf-8')
 
-
     #config.load_kube_config()
     config.load_incluster_config()
     apps_v1 = client.CoreV1Api()
@@ -35,8 +33,6 @@ def get_gw_hosts_list(ns,label):
 
     host_list = []
 
-
-    
     gw_crd = custom_v1.list_namespaced_custom_object(
         group="networking.istio.io", version="v1beta1", plural="gateways", namespace=ns, label_selector=label)
 
@@ -51,7 +47,7 @@ def get_gw_hosts_list(ns,label):
     return(host_list)
     
 
-def get_node_port(ns,label) :
+def get_node_port(ns, svcname) :
 
     # fetches node port a GW service in given namespace.
 
@@ -60,26 +56,20 @@ def get_node_port(ns,label) :
 
     config.load_incluster_config()
     apps_v1 = client.CoreV1Api()
-    custom_v1 = client.CustomObjectsApi()
 
     node_port = ""
 
-    
-    gw_crd = custom_v1.list_namespaced_custom_object(
-        group="networking.istio.io", version="v1beta1", plural="gateways", namespace=ns, label_selector=label)
-    
-    for gw in gw_crd['items']:
-        gw_name = gw['spec']['selector']['app']
-        service_names = apps_v1.read_namespaced_service(gw_name, ns).spec.ports
+    service  = apps_v1.read_namespaced_service(svcname,ns)
+    svc_ports = service.spec.ports
 
-        for svc in service_names:
-            if svc.port == 443:
-                node_port = str(svc.node_port)
-
+    for x in svc_ports:
+        if x.port == 443:
+            node_port = str(x.node_port)
 
     return(node_port)
 
-def get_lb_ip(ns, label) :
+
+def get_lb_ip(ns, svcname) :
 
     # fetches LB IP of a GW service in given namespace.
 
@@ -88,8 +78,10 @@ def get_lb_ip(ns, label) :
 
     config.load_incluster_config()
     apps_v1 = client.CoreV1Api()
-    custom_v1 = client.CustomObjectsApi()
 
     lb_ip = ""
+
+    service  = apps_v1.read_namespaced_service(svcname,ns)
+    lb_ip = service.status.load_balancer.ingress[0].ip
 
     return(lb_ip)
