@@ -1,6 +1,9 @@
 # Locust-istio
 
-Python scripts to enable Locust to send traffic to a istio ingressgateway which will handle traffic for multiple hostnames. Some challenges I faced while testing traffic,
+Python scripts to enable Locust to send traffic to a istio ingressgateway which will handle traffic for multiple hostnames.
+
+## Rationale
+Some challenges I faced while using locust to test traffic on istio service mesh.
 
 1. In a development test setup these hostname may not get resolved by DNS. So traffic need to resolve IP address manually like in "--connect-to" flag in curl
  
@@ -11,20 +14,23 @@ Python scripts to enable Locust to send traffic to a istio ingressgateway which 
 These python files will enable locust to handle these challenges. Also Helm is used to address the challenge of deployment in Kubernetes.
 
 LoadBalancer example with curl:
-curl https://bookinfo.example.com/productpage --connect-to bookinfo.example.com:443:**LB-IP**:443
+
+    curl https://bookinfo.example.com/productpage --connect-to bookinfo.example.com:443:**LB-IP**:443
 
 NodePort example with curl: 
-curl https://bookinfo.example.com/productpage --connect-to bookinfo.example.com:443:**Node-IP**:**Nodeport-for-port-443**
+
+    curl https://bookinfo.example.com/productpage --connect-to bookinfo.example.com:443:**Node-IP**:**Nodeport-for-port-443**
 
 ClusterIP example with curl: 
-curl https://bookinfo.example.com/productpage --connect-to bookinfo.example.com:443:**ClusterIP**:443
+
+    curl https://bookinfo.example.com/productpage --connect-to bookinfo.example.com:443:**ClusterIP**:443
 
 ## Installation and Test steps
 ### Creating test setup
 
 For creating a test setup I used documentation given in "https://istio.io/latest/docs/setup/getting-started/". For ease of reference
-curl -L https://istio.io/downloadIstio | sh -
 
+    curl -L https://istio.io/downloadIstio | sh -
     cd istio-1.20.2
     export PATH=$PWD/bin:$PATH
     istioctl install --set profile=demo -y
@@ -60,8 +66,9 @@ For testing the script use the example given in "bookinfo-gateway-vs.yaml" & "ae
 1. Check locust master and worker pods are coming up. 
 2. If there is a crash check the log outputs of pods and fix the python scripts if needed. Or if it is a infra (kubernetes / istio) related problem, fix it.
 3. If the python scripts are changed to fix step 2, unistall the helm and the configmaps used for installation. Redo the installation.
-4. Once pods are up you can port-forward the locust service and use browser to start test or monitor it as given. `kubectl port-forward service/locust 8089:8089 -n locust`
-5. Else you can use the locust APIs to start and monitor the test
+4. Once pods are up you can port-forward the locust service and use browser to start test or monitor it as given.
+ `kubectl port-forward service/locust 8089:8089 -n locust`
+6. Else you can use the locust APIs to start and monitor the test
 
 start the test (host=www.ddd.com does not matter, it takes value from gateway CR)
 
@@ -89,4 +96,7 @@ monitor the test
     unset a
     unset b
 
-6. you can delete the locust pods or restart the locust deployments or delete the locust replicasets to stop the test. `kubectl delete rs --all -n locust`
+6. you can delete the locust pods or restart the locust deployments or delete the locust replicasets to stop the test. 
+`kubectl delete rs --all -n locust`
+
+
